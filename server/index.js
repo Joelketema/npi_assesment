@@ -4,9 +4,19 @@ const cors = require('cors');
 require('dotenv').config();
 const { db, lookups } = require('./db');
 const { desc, asc, like, or } = require('drizzle-orm');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Rate limiter for search endpoint: 10 requests per minute
+const searchLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 10,
+  message: { error: 'Too many search requests, please try again after a minute.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 app.use(cors());
 app.use(express.json());
@@ -16,7 +26,7 @@ app.get('/health', (req, res) => {
 });
 
 // Search Route with API Integration
-app.post('/api/search', async (req, res) => {
+app.post('/api/search', searchLimiter, async (req, res) => {
   const { query } = req.body;
 
   if (!query) {
