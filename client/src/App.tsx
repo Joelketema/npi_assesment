@@ -53,17 +53,53 @@ function Layout({ children }: { children: React.ReactNode }) {
 
 // Pages
 function SearchPage() {
+  const [query, setQuery] = React.useState('');
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    console.log('Searching for:', query);
+    // Integration will happen in the next step
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="text-center max-w-2xl mx-auto py-12">
-        <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">
-          Healthcare Provider Lookup
+    <div className="space-y-12 py-8">
+      <div className="text-center max-w-2xl mx-auto">
+        <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl tracking-tight">
+          Find a Provider
         </h1>
-        <p className="mt-3 text-xl text-gray-500">
-          Verify credentials, location, and specialties using the NPPES Registry.
+        <p className="mt-4 text-lg text-gray-500">
+          Verify credentials, location, and specialties by NPI number or name.
         </p>
       </div>
-      {/* Search Input will go here */}
+
+      <div className="max-w-xl mx-auto">
+        <form onSubmit={handleSearch} className="relative group">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-500 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="NPI number, first name, or last name..."
+            className="block w-full pl-11 pr-32 py-4 border border-gray-300 rounded-2xl leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm shadow-sm transition-all"
+          />
+          <div className="absolute inset-y-2 right-2 flex items-center">
+            <button
+              type="submit"
+              className="h-full px-6 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all active:scale-95"
+            >
+              Search
+            </button>
+          </div>
+        </form>
+        <p className="mt-3 text-xs text-center text-gray-400">
+          Tip: NPI numbers are 10 digits long.
+        </p>
+      </div>
     </div>
   );
 }
