@@ -36,6 +36,7 @@ A full-stack application to look up and verify healthcare providers using the of
 
 ```bash
 git clone <repository-url>
+cd npi_assesment
 
 ```
 
