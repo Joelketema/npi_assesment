@@ -1,4 +1,3 @@
-import React from 'react';
 
 export function ProviderCard({ provider }: { provider: any }) {
   const { number, basic, addresses, taxonomies, enumeration_date } = provider;

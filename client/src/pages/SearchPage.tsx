@@ -1,15 +1,16 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
+import type { FormEvent } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { searchProviders } from '../services/api';
 import { ProviderCard } from '../components/ProviderCard';
 
 export function SearchPage() {
-  const [query, setQuery] = React.useState('');
-  const [results, setResults] = React.useState<any[]>([]);
-  const [hasSearched, setHasSearched] = React.useState(false);
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<any[]>([]);
+  const [hasSearched, setHasSearched] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!query.trim()) {
       setResults([]);
       setHasSearched(false);
@@ -33,7 +34,7 @@ export function SearchPage() {
     },
   });
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = (e: FormEvent) => {
     e.preventDefault();
     const trimmedQuery = query.trim();
     

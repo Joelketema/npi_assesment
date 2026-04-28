@@ -1,12 +1,12 @@
-import React from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useDebounce } from 'use-debounce';
 import { getHistory } from '../services/api';
 
 export function HistoryPage() {
-  const [searchTerm, setSearchTerm] = React.useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
-  const [sortOrder, setSortOrder] = React.useState('desc');
+  const [sortOrder, setSortOrder] = useState('desc');
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['history', debouncedSearchTerm, sortOrder],
