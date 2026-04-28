@@ -12,6 +12,9 @@ A full-stack application to look up and verify healthcare providers using the of
 - **Rate Limiting**: Backend protection allowing 10 search requests per minute per IP.
 - **Optimized Performance**: Debounced search inputs and server-side filtering/sorting.
 
+> [!CAUTION]
+> **Note on Data Persistence**: When deployed on **Render's Free Tier**, the SQLite database is ephemeral. This means all search history will be wiped whenever the server restarts (at least once every 24 hours).
+
 ## 🛠️ Tech Stack
 
 ### Frontend
