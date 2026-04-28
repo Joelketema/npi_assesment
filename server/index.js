@@ -67,10 +67,26 @@ app.post('/api/search', async (req, res) => {
   }
 });
 
+const { desc, asc, like } = require('drizzle-orm');
+
 // History Route
 app.get('/api/history', async (req, res) => {
+  const { search, sort = 'desc' } = req.query;
+  
   try {
-    const history = await db.select().from(lookups).orderBy(desc(lookups.timestamp)).limit(50);
+    let queryBuilder = db.select().from(lookups);
+    
+    if (search) {
+      queryBuilder = queryBuilder.where(like(lookups.query, `%${search}%`));
+    }
+
+    if (sort === 'asc') {
+      queryBuilder = queryBuilder.orderBy(asc(lookups.timestamp));
+    } else {
+      queryBuilder = queryBuilder.orderBy(desc(lookups.timestamp));
+    }
+
+    const history = await queryBuilder.limit(50);
     res.json(history);
   } catch (error) {
     console.error('DB Error:', error.message);
