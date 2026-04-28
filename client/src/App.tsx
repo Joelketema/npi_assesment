@@ -3,6 +3,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { Toaster, toast } from 'sonner';
 import React, { useEffect } from 'react';
+import { useDebounce } from 'use-debounce';
 
 const API_BASE_URL = 'http://localhost:5000';
 
@@ -233,13 +234,14 @@ function SearchPage() {
 
 function HistoryPage() {
   const [searchTerm, setSearchTerm] = React.useState('');
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
   const [sortOrder, setSortOrder] = React.useState('desc');
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['history', searchTerm, sortOrder],
+    queryKey: ['history', debouncedSearchTerm, sortOrder],
     queryFn: async () => {
       const response = await axios.get(`${API_BASE_URL}/api/history`, {
-        params: { search: searchTerm, sort: sortOrder }
+        params: { search: debouncedSearchTerm, sort: sortOrder }
       });
       return response.data;
     },
