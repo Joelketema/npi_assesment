@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { Toaster, toast } from 'sonner';
 import React, { useEffect } from 'react';
@@ -54,12 +54,29 @@ function Layout({ children }: { children: React.ReactNode }) {
 // Pages
 function SearchPage() {
   const [query, setQuery] = React.useState('');
+  const [results, setResults] = React.useState<any[]>([]);
+
+  // Since we want to trigger search on button click, we use useMutation
+  const searchMutation = useMutation({
+    mutationFn: async (searchQuery: string) => {
+      const response = await axios.post(`${API_BASE_URL}/api/search`, { query: searchQuery });
+      return response.data;
+    },
+    onSuccess: (data) => {
+      setResults(data);
+      toast.success(`Found ${data.length} provider(s)`);
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.error || 'Search failed';
+      toast.error(message);
+      setResults([]);
+    },
+  });
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!query.trim()) return;
-    console.log('Searching for:', query);
-    // Integration will happen in the next step
+    if (!query.trim() || searchMutation.isPending) return;
+    searchMutation.mutate(query);
   };
 
   return (
@@ -90,9 +107,17 @@ function SearchPage() {
           <div className="absolute inset-y-2 right-2 flex items-center">
             <button
               type="submit"
-              className="h-full px-6 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all active:scale-95"
+              disabled={searchMutation.isPending}
+              className="h-full px-6 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Search
+              {searchMutation.isPending ? (
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Searching...</span>
+                </div>
+              ) : (
+                'Search'
+              )}
             </button>
           </div>
         </form>
