@@ -52,9 +52,45 @@ function Layout({ children }: { children: React.ReactNode }) {
 }
 
 // Pages
+function ProviderCard({ provider }: { provider: any }) {
+  const { number, basic, addresses, taxonomies } = provider;
+  const name = `${basic.first_name || ''} ${basic.last_name || basic.organization_name || ''}`.trim();
+  const credentials = basic.credential || 'N/A';
+  const specialty = taxonomies?.[0]?.desc || 'General Practice';
+  const state = addresses?.[0]?.state || 'Unknown';
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+      <div className="flex justify-between items-start mb-4">
+        <div>
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mb-2">
+            NPI: {number}
+          </span>
+          <h3 className="text-lg font-bold text-gray-900">{name}</h3>
+          <p className="text-sm text-gray-500 font-medium">{credentials}</p>
+        </div>
+        <div className="text-right">
+          <span className="text-sm font-semibold text-gray-900 bg-gray-100 px-2 py-1 rounded">
+            {state}
+          </span>
+        </div>
+      </div>
+      <div className="border-t border-gray-100 pt-4 mt-4">
+        <div className="flex items-center text-sm text-gray-600">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+          {specialty}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SearchPage() {
   const [query, setQuery] = React.useState('');
   const [results, setResults] = React.useState<any[]>([]);
+  const [hasSearched, setHasSearched] = React.useState(false);
 
   // Since we want to trigger search on button click, we use useMutation
   const searchMutation = useMutation({
@@ -64,12 +100,16 @@ function SearchPage() {
     },
     onSuccess: (data) => {
       setResults(data);
+      setHasSearched(true);
       toast.success(`Found ${data.length} provider(s)`);
     },
     onError: (error: any) => {
       const message = error.response?.data?.error || 'Search failed';
-      toast.error(message);
+      if (error.response?.status !== 404) {
+        toast.error(message);
+      }
       setResults([]);
+      setHasSearched(true);
     },
   });
 
@@ -136,6 +176,24 @@ function SearchPage() {
         <p className="mt-3 text-xs text-center text-gray-400">
           Tip: NPI numbers are 10 digits long.
         </p>
+      </div>
+
+      <div className="space-y-6">
+        {results.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {results.map((provider) => (
+              <ProviderCard key={provider.number} provider={provider} />
+            ))}
+          </div>
+        ) : hasSearched && !searchMutation.isPending ? (
+          <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-gray-300">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 9.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h3 className="text-lg font-medium text-gray-900">No results found</h3>
+            <p className="text-gray-500">Try adjusting your search criteria or checking the NPI number.</p>
+          </div>
+        ) : null}
       </div>
     </div>
   );
