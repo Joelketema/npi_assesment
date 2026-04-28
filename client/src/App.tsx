@@ -6,7 +6,7 @@ import { Toaster, toast } from 'sonner';
 const API_BASE_URL = 'http://localhost:5000';
 
 function App() {
-  const { isError, error } = useQuery({
+  const { isError, isPending, error } = useQuery({
     queryKey: ['health'],
     queryFn: async () => {
       const response = await axios.get(`${API_BASE_URL}/health`);
@@ -35,7 +35,11 @@ function App() {
           NPPES NPI Registry Lookup Tool
         </p>
 
-        {isError ? (
+        {isPending ? (
+          <div className="p-4 bg-blue-50 text-blue-700 rounded-lg border border-blue-100 animate-pulse">
+            <p className="font-medium">Checking system status...</p>
+          </div>
+        ) : isError ? (
           <div className="p-4 bg-red-50 text-red-700 rounded-lg border border-red-100">
             <p className="font-medium">Backend Offline</p>
             <p className="text-sm opacity-90">Please start the server to continue.</p>
