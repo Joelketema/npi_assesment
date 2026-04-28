@@ -13,3 +13,4 @@ server/node_modules
 *.sqlite-journal
 *.db
 .env
+DEPLOYMENT.md

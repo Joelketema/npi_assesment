@@ -18,9 +18,15 @@ const searchLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-app.use(cors());
+const path = require('path');
+
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || '*',
+  methods: ['GET', 'POST'],
+}));
 app.use(express.json());
 
+// API Routes
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Server is running' });
 });
@@ -109,6 +115,15 @@ app.get('/api/history', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch history' });
   }
 });
+
+// Serve Frontend in Production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../client/dist')));
+
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/dist', 'index.html'));
+  });
+}
 
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
