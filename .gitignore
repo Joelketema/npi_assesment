@@ -11,4 +11,5 @@ client/dist
 server/node_modules
 *.sqlite
 *.sqlite-journal
+*.db
 .env
