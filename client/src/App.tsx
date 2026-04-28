@@ -200,10 +200,85 @@ function SearchPage() {
 }
 
 function HistoryPage() {
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['history'],
+    queryFn: async () => {
+      const response = await axios.get(`${API_BASE_URL}/api/history`);
+      return response.data;
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-12">
+        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="text-center py-12 text-red-600">
+        <p>Failed to load history. Please try again later.</p>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Recent Lookups</h1>
-      <p className="text-gray-500 italic">History dashboard coming soon...</p>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-gray-900">Recent Lookups</h1>
+        <span className="text-sm text-gray-500">{data?.length || 0} records found</span>
+      </div>
+
+      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Query</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Provider Found</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {data && data.length > 0 ? (
+                data.map((item: any) => {
+                  const result = JSON.parse(item.result);
+                  const providerName = result.basic 
+                    ? `${result.basic.first_name || ''} ${result.basic.last_name || result.basic.organization_name || ''}`.trim()
+                    : result.error || 'Unknown';
+
+                  return (
+                    <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-sm font-mono font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                          {item.query}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {providerName}
+                        {result.basic?.credential && (
+                          <span className="ml-2 text-gray-400 text-xs">{result.basic.credential}</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(item.timestamp).toLocaleString()}
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={3} className="px-6 py-12 text-center text-gray-500">
+                    No history found yet. Start searching to see records here!
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
