@@ -9,6 +9,13 @@ export function SearchPage() {
   const [results, setResults] = React.useState<any[]>([]);
   const [hasSearched, setHasSearched] = React.useState(false);
 
+  React.useEffect(() => {
+    if (!query.trim()) {
+      setResults([]);
+      setHasSearched(false);
+    }
+  }, [query]);
+
   const searchMutation = useMutation({
     mutationFn: searchProviders,
     onSuccess: (data) => {
