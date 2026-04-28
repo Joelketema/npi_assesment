@@ -2,13 +2,8 @@ const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 require('dotenv').config();
-const { drizzle } = require('drizzle-orm/better-sqlite3');
-const Database = require('better-sqlite3');
-const { lookups } = require('./db/schema');
+const { db, lookups } = require('./db');
 const { desc } = require('drizzle-orm');
-
-const sqlite = new Database('sqlite.db');
-const db = drizzle(sqlite);
 
 const app = express();
 const PORT = process.env.PORT || 5000;

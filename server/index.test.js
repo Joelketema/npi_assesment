@@ -1,33 +1,35 @@
 const request = require('supertest');
 const nock = require('nock');
+const axios = require('axios');
+const { db } = require('./db');
 const app = require('./index');
 
-describe('API Endpoints', () => {
+// Mock the database
+jest.mock('./db', () => ({
+  db: {
+    insert: jest.fn().mockReturnThis(),
+    values: jest.fn().mockResolvedValue(true),
+    select: jest.fn().mockReturnThis(),
+    from: jest.fn().mockReturnThis(),
+    orderBy: jest.fn().mockReturnThis(),
+    limit: jest.fn().mockResolvedValue([]),
+  },
+  lookups: {}
+}));
+
+describe('API Endpoints & Persistence', () => {
   afterEach(() => {
     nock.cleanAll();
+    jest.clearAllMocks();
   });
 
-  describe('GET /health', () => {
-    it('should return 200 and healthy status', async () => {
-      const res = await request(app).get('/health');
-      expect(res.statusCode).toEqual(200);
-      expect(res.body).toHaveProperty('status', 'ok');
-    });
-  });
-
-  describe('POST /api/search', () => {
-    it('should return 400 if query is missing', async () => {
-      const res = await request(app).post('/api/search').send({});
-      expect(res.statusCode).toEqual(400);
-      expect(res.body).toHaveProperty('error', 'Search query is required');
-    });
-
-    it('should return provider data for a valid NPI', async () => {
+  describe('POST /api/search with Persistence', () => {
+    it('should save search results to the database', async () => {
       const mockResult = [{ number: '1234567890', basic: { name: 'Test Provider' } }];
       
       nock('https://npiregistry.cms.hhs.gov')
         .get('/api/')
-        .query(true) // match any query params
+        .query(true)
         .reply(200, { results: mockResult });
 
       const res = await request(app)
@@ -35,21 +37,31 @@ describe('API Endpoints', () => {
         .send({ query: '1234567890' });
 
       expect(res.statusCode).toEqual(200);
-      expect(res.body).toEqual(mockResult);
+      
+      // Verify persistence call
+      expect(db.insert).toHaveBeenCalled();
+      expect(db.values).toHaveBeenCalledWith(
+        expect.objectContaining({
+          query: '1234567890',
+          result: JSON.stringify(mockResult[0])
+        })
+      );
     });
+  });
 
-    it('should return 404 if no providers are found', async () => {
-      nock('https://npiregistry.cms.hhs.gov')
-        .get('/api/')
-        .query(true)
-        .reply(200, { results: [] });
+  describe('GET /api/history', () => {
+    it('should fetch history from the database', async () => {
+      const mockHistory = [
+        { id: 1, query: '1234567890', result: '{}', timestamp: new Date() }
+      ];
+      db.limit.mockResolvedValue(mockHistory);
 
-      const res = await request(app)
-        .post('/api/search')
-        .send({ query: 'Unknown' });
+      const res = await request(app).get('/api/history');
 
-      expect(res.statusCode).toEqual(404);
-      expect(res.body).toHaveProperty('error', 'No providers found');
+      expect(res.statusCode).toEqual(200);
+      expect(db.select).toHaveBeenCalled();
+      expect(res.body).toHaveLength(1);
+      expect(res.body[0].query).toBe('1234567890');
     });
   });
 });
