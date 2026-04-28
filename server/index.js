@@ -73,12 +73,12 @@ app.get('/api/history', async (req, res) => {
   const { search, sort = 'desc' } = req.query;
   
   try {
-    let queryBuilder = db.select().from(lookups);
+    let query = db.select().from(lookups).$dynamic();
     
     // Only apply filter if search is a non-empty string
     if (search && search.trim() !== '') {
       const searchPattern = `%${search}%`;
-      queryBuilder = queryBuilder.where(
+      query = query.where(
         or(
           like(lookups.query, searchPattern),
           like(lookups.result, searchPattern)
@@ -87,12 +87,12 @@ app.get('/api/history', async (req, res) => {
     }
 
     if (sort === 'asc') {
-      queryBuilder = queryBuilder.orderBy(asc(lookups.timestamp));
+      query = query.orderBy(asc(lookups.timestamp));
     } else {
-      queryBuilder = queryBuilder.orderBy(desc(lookups.timestamp));
+      query = query.orderBy(desc(lookups.timestamp));
     }
 
-    const history = await queryBuilder.limit(50);
+    const history = await query.limit(50);
     res.json(history);
   } catch (error) {
     console.error('DB Error:', error.message);

@@ -11,6 +11,7 @@ jest.mock('./db', () => ({
     values: jest.fn().mockResolvedValue(true),
     select: jest.fn().mockReturnThis(),
     from: jest.fn().mockReturnThis(),
+    $dynamic: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
     orderBy: jest.fn().mockReturnThis(),
     limit: jest.fn().mockResolvedValue([]),
