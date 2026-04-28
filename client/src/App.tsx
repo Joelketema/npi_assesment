@@ -75,8 +75,20 @@ function SearchPage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!query.trim() || searchMutation.isPending) return;
-    searchMutation.mutate(query);
+    const trimmedQuery = query.trim();
+    
+    if (!trimmedQuery || searchMutation.isPending) return;
+
+    // Validation: If it's numeric, it must be 10 digits
+    const isNumeric = /^\d+$/.test(trimmedQuery);
+    if (isNumeric && trimmedQuery.length !== 10) {
+      toast.error('Invalid NPI format', {
+        description: 'NPI numbers must be exactly 10 digits long.',
+      });
+      return;
+    }
+
+    searchMutation.mutate(trimmedQuery);
   };
 
   return (
