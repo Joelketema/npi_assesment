@@ -15,6 +15,7 @@ A full-stack application to look up and verify healthcare providers using the of
 ## 🛠️ Tech Stack
 
 ### Frontend
+
 - **Framework**: React (Vite)
 - **Styling**: Tailwind CSS
 - **State Management**: TanStack Query (React Query)
@@ -22,6 +23,7 @@ A full-stack application to look up and verify healthcare providers using the of
 - **Notifications**: Sonner
 
 ### Backend
+
 - **Server**: Node.js + Express
 - **Database**: SQLite
 - **ORM**: Drizzle ORM
@@ -31,12 +33,14 @@ A full-stack application to look up and verify healthcare providers using the of
 ## 📦 Installation & Setup
 
 ### 1. Clone the repository
+
 ```bash
 git clone <repository-url>
-cd desta_assesment
+
 ```
 
 ### 2. Backend Setup
+
 ```bash
 cd server
 npm install
@@ -45,25 +49,31 @@ npx drizzle-kit push
 # Start the server
 npm run dev
 ```
+
 The server will run at `http://localhost:5000`.
 
 ### 3. Frontend Setup
+
 ```bash
 cd client
 npm install
 # Start the development server
 npm run dev
 ```
+
 The application will be available at `http://localhost:5173`.
 
 ## 🧪 Running Tests
+
 The project includes a suite of backend tests covering API logic and database persistence.
+
 ```bash
 cd server
 npm test
 ```
 
 ## 📂 Project Structure
+
 ```
 ├── client/                 # React frontend
 │   ├── src/
