@@ -90,9 +90,9 @@ export function SearchPage() {
         </p>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-6 overflow-y-auto max-h-[calc(100vh-420px)] pr-2 scrollbar-thin scrollbar-thumb-gray-200">
         {results.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-4">
             {results.map((provider) => (
               <ProviderCard key={provider.number} provider={provider} />
             ))}
