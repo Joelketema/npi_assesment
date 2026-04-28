@@ -3,7 +3,7 @@ const axios = require('axios');
 const cors = require('cors');
 require('dotenv').config();
 const { db, lookups } = require('./db');
-const { desc } = require('drizzle-orm');
+const { desc, asc, like, or } = require('drizzle-orm');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -67,7 +67,6 @@ app.post('/api/search', async (req, res) => {
   }
 });
 
-const { desc, asc, like } = require('drizzle-orm');
 
 // History Route
 app.get('/api/history', async (req, res) => {
@@ -76,8 +75,15 @@ app.get('/api/history', async (req, res) => {
   try {
     let queryBuilder = db.select().from(lookups);
     
-    if (search) {
-      queryBuilder = queryBuilder.where(like(lookups.query, `%${search}%`));
+    // Only apply filter if search is a non-empty string
+    if (search && search.trim() !== '') {
+      const searchPattern = `%${search}%`;
+      queryBuilder = queryBuilder.where(
+        or(
+          like(lookups.query, searchPattern),
+          like(lookups.result, searchPattern)
+        )
+      );
     }
 
     if (sort === 'asc') {

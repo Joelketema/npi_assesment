@@ -11,10 +11,15 @@ jest.mock('./db', () => ({
     values: jest.fn().mockResolvedValue(true),
     select: jest.fn().mockReturnThis(),
     from: jest.fn().mockReturnThis(),
+    where: jest.fn().mockReturnThis(),
     orderBy: jest.fn().mockReturnThis(),
     limit: jest.fn().mockResolvedValue([]),
   },
-  lookups: {}
+  lookups: {
+    query: 'query',
+    result: 'result',
+    timestamp: 'timestamp'
+  }
 }));
 
 describe('API Endpoints & Persistence', () => {
@@ -62,6 +67,12 @@ describe('API Endpoints & Persistence', () => {
       expect(db.select).toHaveBeenCalled();
       expect(res.body).toHaveLength(1);
       expect(res.body[0].query).toBe('1234567890');
+    });
+
+    it('should filter history when search query is provided', async () => {
+      await request(app).get('/api/history').query({ search: 'John' });
+      
+      expect(db.where).toHaveBeenCalled();
     });
   });
 });
