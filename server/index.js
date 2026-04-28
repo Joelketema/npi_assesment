@@ -2,6 +2,13 @@ const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 require('dotenv').config();
+const { drizzle } = require('drizzle-orm/better-sqlite3');
+const Database = require('better-sqlite3');
+const { lookups } = require('./db/schema');
+const { desc } = require('drizzle-orm');
+
+const sqlite = new Database('sqlite.db');
+const db = drizzle(sqlite);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -43,13 +50,36 @@ app.post('/api/search', async (req, res) => {
     const response = await axios.get('https://npiregistry.cms.hhs.gov/api/', { params });
     
     if (!response.data.results || response.data.results.length === 0) {
+      // Still persist the failed lookup? Requirements say "Store every lookup".
+      // I'll store it even if results are empty to show the attempt.
+      await db.insert(lookups).values({
+        query,
+        result: JSON.stringify({ error: 'No results found' }),
+      });
       return res.status(404).json({ error: 'No providers found' });
     }
+
+    // Save success to DB
+    await db.insert(lookups).values({
+      query,
+      result: JSON.stringify(response.data.results[0]), // Store the top result
+    });
 
     res.json(response.data.results);
   } catch (error) {
     console.error('NPPES API Error:', error.message);
     res.status(500).json({ error: 'Failed to fetch provider data' });
+  }
+});
+
+// History Route
+app.get('/api/history', async (req, res) => {
+  try {
+    const history = await db.select().from(lookups).orderBy(desc(lookups.timestamp)).limit(50);
+    res.json(history);
+  } catch (error) {
+    console.error('DB Error:', error.message);
+    res.status(500).json({ error: 'Failed to fetch history' });
   }
 });
 
